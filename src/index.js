@@ -3,9 +3,9 @@ import './font_material_icons.css';
 import './material.teal-red.min.css';
 import './main.css';
 
-import { Main } from './Main.elm';
+import { Vacuum } from './Vacuum.elm';
 import registerServiceWorker from './registerServiceWorker';
 
-Main.embed(document.getElementById('root'));
+Vacuum.embed(document.getElementById('root'));
 
 registerServiceWorker();
