@@ -41,7 +41,7 @@ header model =
         , Material.Layout.spacer
         , Material.Layout.navigation []
             [ Material.Layout.link
-                [ Material.Layout.href "https://github.com/simonswine/elm-a-star" ]
+                [ Material.Layout.href "https://github.com/simonswine/rocklet-ui" ]
                 [ Html.span [] [ text "github" ] ]
             , Material.Layout.link
                 [ Material.Layout.href "https://twitter.com/simonswine" ]
@@ -74,7 +74,7 @@ page model =
             Vacuum.Cleanings.List.view model.cleanings
 
         Vacuum.Models.CleaningRoute _ _ ->
-            Vacuum.Cleanings.Single.view model.cleaning
+            Vacuum.Cleanings.Single.view model.cleaning model.mapZoom
 
         Vacuum.Models.NotFoundRoute ->
             notFoundView

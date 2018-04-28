@@ -2,10 +2,11 @@ module Vacuum.Commands exposing (..)
 
 import Http
 import Json.Decode as Decode
-import Json.Decode.Pipeline exposing (decode, required)
+import Json.Decode.Pipeline exposing (decode, required, optional)
 import Vacuum.Msgs exposing (Msg)
-import Vacuum.Models exposing (VacuumId, Vacuum, VacuumStatus, Cleaning, CleaningStatus, Metadata)
+import Vacuum.Models exposing (VacuumId, Vacuum, VacuumStatus, Cleaning, CleaningStatus, Metadata, Path, Position, Map)
 import RemoteData
+import Maybe
 
 
 metadataDecoder : Decode.Decoder Metadata
@@ -13,6 +14,29 @@ metadataDecoder =
     decode Metadata
         |> required "namespace" Decode.string
         |> required "name" Decode.string
+
+
+mapDecoder : Decode.Decoder Map
+mapDecoder =
+    decode Map
+        |> required "left" Decode.int
+        |> required "top" Decode.int
+        |> required "width" Decode.int
+        |> required "height" Decode.int
+        |> required "data" Decode.string
+
+
+positionDecoder : Decode.Decoder Position
+positionDecoder =
+    Decode.map2 Position
+        (Decode.field "x" Decode.float)
+        (Decode.field "y" Decode.float)
+
+
+pathDecoder : Decode.Decoder Path
+pathDecoder =
+    positionDecoder
+        |> Decode.list
 
 
 fetchVacuums : Cmd Msg
@@ -95,6 +119,11 @@ cleaningStatusDecoder =
         |> required "code" Decode.int
         |> required "complete" Decode.bool
         |> required "duration" Decode.string
+        |> optional "path" pathDecoder []
+        |> optional "map" (Decode.nullable mapDecoder) Nothing
+        |> optional "charger" (Decode.maybe positionDecoder) Nothing
+        |> optional "beginTime" (Decode.nullable Decode.string) Nothing
+        |> optional "endTime" (Decode.nullable Decode.string) Nothing
 
 
 cleaningDecoder : Decode.Decoder Cleaning

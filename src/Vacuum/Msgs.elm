@@ -14,3 +14,4 @@ type Msg
     | OnFetchCleaning (WebData Cleaning)
     | OnLocationChange Location
     | NewNotify String
+    | MapZoomSliderMsg Float

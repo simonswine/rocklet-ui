@@ -10,9 +10,28 @@ type alias Metadata =
     }
 
 
+type alias Map =
+    { left : Int
+    , top : Int
+    , width : Int
+    , height : Int
+    , data : String
+    }
+
+
 type alias Vacuum =
     { metadata : Metadata
     , status : VacuumStatus
+    }
+
+
+type alias Path =
+    List Position
+
+
+type alias Position =
+    { x : Float
+    , y : Float
     }
 
 
@@ -32,6 +51,11 @@ type alias CleaningStatus =
     , code : Int
     , complete : Bool
     , duration : String
+    , path : Path
+    , map : Maybe Map
+    , charger : Maybe Position
+    , beginTime : Maybe String
+    , endTime : Maybe String
     }
 
 
@@ -42,6 +66,7 @@ type alias Model =
     , cleaning : WebData Cleaning
     , route : Route
     , mdl : Material.Model
+    , mapZoom : Float
     }
 
 
@@ -53,6 +78,7 @@ initialModel route =
     , cleaning = RemoteData.Loading
     , route = route
     , mdl = Material.model
+    , mapZoom = 2.0
     }
 
 
@@ -72,6 +98,6 @@ type Route
     = HomeRoute
     | NotFoundRoute
     | VacuumsRoute
-    | VacuumRoute VacuumId
+    | VacuumRoute Namespace Name
     | CleaningsRoute --- TODO: reenable namespacing by vacuum VacuumId
     | CleaningRoute Namespace Name

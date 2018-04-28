@@ -81,8 +81,9 @@ func (c *Controller) processNextItem() bool {
 }
 
 func (c *Controller) sendNotify(key string) error {
-	log.Info().Str("key", fmt.Sprintf("%s/%s", c.resource, key)).Msg("received update")
-	hub.broadcast <- []byte(c.resource)
+	notifyKey := fmt.Sprintf("%s/%s", c.resource, key)
+	log.Info().Str("notify_key", notifyKey).Msg("received update")
+	hub.broadcast <- []byte(notifyKey)
 	return nil
 }
 
@@ -273,7 +274,7 @@ func handleList(w http.ResponseWriter, r *http.Request) {
 			case *vacuumv1alpha1.Cleaning:
 				smaller := v.DeepCopy()
 				smaller.Status.Path = []vacuumv1alpha1.Position(nil)
-				smaller.Status.Map = []byte(nil)
+				smaller.Status.Map = nil
 				list.Items = append(list.Items, *smaller)
 			default:
 				continue
@@ -313,7 +314,7 @@ func handleMap(w http.ResponseWriter, r *http.Request) {
 		w.Write(v.Status.Map)
 	case *vacuumv1alpha1.Cleaning:
 		w.Header().Set("Content-Type", "image/png")
-		w.Write(v.Status.Map)
+		w.Write(v.Status.Map.Data)
 	default:
 		httpError(w, "unsupported type", 500)
 		return
@@ -346,5 +347,5 @@ func handleSingle(w http.ResponseWriter, r *http.Request) {
 
 func httpError(w http.ResponseWriter, err string, status int) {
 	log.Warn().Int("status", status).Msg(err)
-	httpError(w, err, status)
+	http.Error(w, err, status)
 }

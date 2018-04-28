@@ -9,7 +9,7 @@ matchers : Parser (Route -> a) a
 matchers =
     oneOf
         [ map VacuumsRoute top
-        , map VacuumRoute (s "vacuum" </> string)
+        , map VacuumRoute (s "vacuum" </> string </> string)
         , map VacuumsRoute (s "vacuums")
         , map CleaningsRoute (s "cleanings")
         , map CleaningRoute (s "cleaning" </> string </> string)

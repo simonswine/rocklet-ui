@@ -25,7 +25,7 @@ maybeList response =
             text "Loading..."
 
         RemoteData.Success vacuums ->
-            list vacuums
+            vacuums |> List.sortBy (\x -> x.metadata.name) |> List.sortBy (\x -> x.metadata.name) |> list
 
         RemoteData.Failure error ->
             text (toString error)

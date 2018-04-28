@@ -27,7 +27,7 @@ maybeList response =
             text "Loading..."
 
         RemoteData.Success cleanings ->
-            list cleanings
+            cleanings |> List.sortBy (\x -> x.metadata.name) |> List.sortBy (\x -> x.metadata.name) |> list
 
         RemoteData.Failure error ->
             text (toString error)
@@ -40,7 +40,7 @@ list cleanings =
             [ Table.tr []
                 [ Table.th [] [ text "Namespace" ]
                 , Table.th [] [ text "Name" ]
-                , Table.th [ Table.numeric ] [ text "State" ]
+                , Table.th [ Table.numeric ] [ text "Complete" ]
                 , Table.th [ Table.numeric ] [ text "Area" ]
                 , Table.th [ Table.numeric ] [ text "Duration" ]
                 , Table.th [] []
