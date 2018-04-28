@@ -25,13 +25,13 @@ import (
 	"os"
 	"time"
 
-	"github.com/golang/glog"
 	"github.com/gorilla/mux"
 	"github.com/rs/zerolog"
 	"k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/apimachinery/pkg/util/wait"
+	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/util/workqueue"
@@ -40,7 +40,7 @@ import (
 	vacuum "github.com/simonswine/rocklet/pkg/client/clientset/versioned"
 )
 
-var log = zerolog.New(os.Stdout).With().Str("app", "rocklet-ui").Logger().Level(zerolog.DebugLevel)
+var log = zerolog.New(os.Stdout).With().Timestamp().Str("app", "rocklet-ui").Logger().Level(zerolog.DebugLevel)
 
 var hub *Hub
 
@@ -110,7 +110,7 @@ func (c *Controller) handleErr(err error, key interface{}) {
 	c.queue.Forget(key)
 	// Report to an external entity that, even after several retries, we could not successfully process this key
 	runtime.HandleError(err)
-	glog.Infof("Dropping pod %q out of the queue: %v", key, err)
+	log.Info().Msgf("Dropping %s %q out of the queue: %v", c.resource, key, err)
 }
 
 func (c *Controller) Run(threadiness int, stopCh chan struct{}) {
@@ -118,7 +118,7 @@ func (c *Controller) Run(threadiness int, stopCh chan struct{}) {
 
 	// Let the workers stop when we are done
 	defer c.queue.ShutDown()
-	glog.Info("Starting controller")
+	log.Info().Str("resource", c.resource).Msg("starting controller")
 
 	go c.informer.Run(stopCh)
 
@@ -133,7 +133,7 @@ func (c *Controller) Run(threadiness int, stopCh chan struct{}) {
 	}
 
 	<-stopCh
-	glog.Info("Stopping controller")
+	log.Info().Str("resource", c.resource).Msg("stopping controller")
 }
 
 func (c *Controller) runWorker() {
@@ -152,16 +152,26 @@ func main() {
 	flag.StringVar(&master, "master", "", "master url")
 	flag.Parse()
 
-	// creates the connection
-	config, err := clientcmd.BuildConfigFromFlags(master, kubeconfig)
-	if err != nil {
-		glog.Fatal(err)
+	var config *rest.Config
+	var err error
+
+	if kubeconfig != "" {
+		// creates the connection
+		config, err = clientcmd.BuildConfigFromFlags(master, kubeconfig)
+		if err != nil {
+			log.Fatal().Err(err).Msg("error building config from kubeconfig")
+		}
+	} else {
+		config, err = rest.InClusterConfig()
+		if err != nil {
+			log.Fatal().Err(err).Msg("error building in-cluster config")
+		}
 	}
 
 	// creates the clientset
 	clientset, err := vacuum.NewForConfig(config)
 	if err != nil {
-		glog.Fatal(err)
+		log.Fatal().Err(err).Msg("error creating client set")
 	}
 
 	// create the pod watcher
@@ -234,7 +244,7 @@ func main() {
 
 	l, err := net.Listen("tcp", s.Addr)
 	if err != nil {
-		glog.Fatal(err)
+		log.Fatal().Err(err).Msg("error listening on tcp socket")
 	}
 
 	// Now let's start the controller
