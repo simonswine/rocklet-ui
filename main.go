@@ -237,9 +237,21 @@ func main() {
 		Handler: m,
 	}
 
+	// setup static asset passthrough
+	if dir := os.Getenv("ROCKLET_UI_STATIC_ASSETS"); dir != "" {
+		log.Info().Str("wwwroot", dir).Msg("handling static assets")
+		m.PathPrefix("/static/").Handler(http.FileServer(http.Dir(dir)))
+		m.Path("/index.html").Handler(http.FileServer(http.Dir(dir)))
+		m.Path("/service-worker.js").Handler(http.FileServer(http.Dir(dir)))
+		m.Path("/favicon.ico").Handler(http.FileServer(http.Dir(dir)))
+		m.Path("/index.html").Handler(http.FileServer(http.Dir(dir)))
+	}
+
 	m.HandleFunc("/apis/vacuum.swine.de/v1alpha1/{type}", handleList)
 	m.HandleFunc("/apis/vacuum.swine.de/v1alpha1/namespaces/{namespace}/{type}/{name}", handleSingle)
 	m.HandleFunc("/apis/vacuum.swine.de/v1alpha1/namespaces/{namespace}/{type}/{name}/map", handleMap)
+
+	// websocket notifications
 	m.HandleFunc("/ws/notify", handleNotify)
 
 	l, err := net.Listen("tcp", s.Addr)
