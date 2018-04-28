@@ -1,7 +1,5 @@
-*
-!/public
-!/src
-!*.go
-!/Gopkg.toml
-!/Gopkg.lock
-!*.json
+/vendor
+/elm-stuff
+/tags
+/rocklet-ui
+/build
