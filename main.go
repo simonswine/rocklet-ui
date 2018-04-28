@@ -144,12 +144,14 @@ func (c *Controller) runWorker() {
 func main() {
 	var kubeconfig string
 	var master string
+	var listen string
 
 	hub = newHub()
 	go hub.run()
 
 	flag.StringVar(&kubeconfig, "kubeconfig", "", "absolute path to the kubeconfig file")
 	flag.StringVar(&master, "master", "", "master url")
+	flag.StringVar(&listen, "listen", ":8812", "listen host")
 	flag.Parse()
 
 	var config *rest.Config
@@ -233,7 +235,7 @@ func main() {
 	// setup http server
 	m := mux.NewRouter()
 	s := http.Server{
-		Addr:    "0.0.0.0:8812",
+		Addr:    listen,
 		Handler: m,
 	}
 

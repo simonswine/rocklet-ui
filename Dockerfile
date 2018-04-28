@@ -34,7 +34,7 @@ FROM alpine:3.7
 RUN apk add --update ca-certificates && update-ca-certificates
 
 ENV ROCKLET_UI_STATIC_ASSETS=/var/www
-EXPOSE 8813
+EXPOSE 8812
 
 COPY --from=0 /app/build /var/www
 COPY --from=1 /go/src/github.com/simonswine/rocklet-ui/rocklet-ui /usr/local/bin/rocklet-ui
