@@ -2,4 +2,6 @@
 !/public
 !/src
 !*.go
+!/Gopkg.toml
+!/Gopkg.lock
 !*.json
