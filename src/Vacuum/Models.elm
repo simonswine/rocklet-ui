@@ -1,6 +1,7 @@
 module Vacuum.Models exposing (..)
 
 import RemoteData exposing (WebData)
+import Navigation exposing (Location)
 import Material
 
 
@@ -65,18 +66,20 @@ type alias Model =
     , cleanings : WebData (List Cleaning)
     , cleaning : WebData Cleaning
     , route : Route
+    , location : Location
     , mdl : Material.Model
     , mapZoom : Float
     }
 
 
-initialModel : Route -> Model
-initialModel route =
+initialModel : Location -> Route -> Model
+initialModel location route =
     { vacuums = RemoteData.Loading
     , vacuum = RemoteData.Loading
     , cleanings = RemoteData.Loading
     , cleaning = RemoteData.Loading
     , route = route
+    , location = location
     , mdl = Material.model
     , mapZoom = 2.0
     }

@@ -75,13 +75,13 @@ handleLocationChange location ( model, cmd ) =
     in
         case newRoute of
             Vacuum.Models.VacuumsRoute ->
-                ( { model | route = newRoute }, Cmd.batch ([ fetchVacuums, cmd ]) )
+                ( { model | route = newRoute, location = location }, Cmd.batch ([ fetchVacuums, cmd ]) )
 
             Vacuum.Models.CleaningsRoute ->
-                ( { model | route = newRoute }, Cmd.batch ([ fetchCleanings, cmd ]) )
+                ( { model | route = newRoute, location = location }, Cmd.batch ([ fetchCleanings, cmd ]) )
 
             Vacuum.Models.CleaningRoute namespace name ->
-                ( { model | route = newRoute }, Cmd.batch ([ (fetchCleaning namespace name), cmd ]) )
+                ( { model | route = newRoute, location = location }, Cmd.batch ([ (fetchCleaning namespace name), cmd ]) )
 
             _ ->
-                ( { model | route = newRoute }, cmd )
+                ( { model | route = newRoute, location = location }, cmd )
