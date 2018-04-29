@@ -38,6 +38,16 @@ type alias Position =
 
 type alias VacuumStatus =
     { state : String
+    , mac : String
+    , duration : String
+    , area : Int
+    , batteryLevel : Int
+    , fanPower : Int
+    , errorCode : Int
+    , doNotDisturb : Bool
+    , map : Maybe Map
+    , path : Path
+    , charger : Maybe Position
     }
 
 

@@ -4,6 +4,7 @@ import Html exposing (Html, div, text)
 import Vacuum.Models exposing (Model, VacuumId)
 import Vacuum.Msgs exposing (Msg)
 import Vacuum.Vacuums.List
+import Vacuum.Vacuums.Single
 import Vacuum.Cleanings.List
 import Vacuum.Cleanings.Single
 import Vacuum.Page
@@ -69,6 +70,9 @@ page model =
     case model.route of
         Vacuum.Models.VacuumsRoute ->
             Vacuum.Vacuums.List.view model.vacuums
+
+        Vacuum.Models.VacuumRoute _ _ ->
+            Vacuum.Vacuums.Single.view model.vacuum model.mapZoom
 
         Vacuum.Models.CleaningsRoute ->
             Vacuum.Cleanings.List.view model.cleanings

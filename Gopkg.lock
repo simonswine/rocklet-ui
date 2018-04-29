@@ -133,7 +133,7 @@
     "pkg/client/clientset/versioned/scheme",
     "pkg/client/clientset/versioned/typed/vacuum/v1alpha1"
   ]
-  revision = "e5b0ab6d9b256d9e8384c3229fefff89eef38e71"
+  revision = "a4559d19d3d7277b99b114ecc67e34a4579a4d70"
 
 [[projects]]
   name = "github.com/spf13/pflag"
@@ -321,6 +321,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "41fe92622f757dbc9877bc4eb423e3188caddde5b4a11cdbfd2ef3a715d8d65e"
+  inputs-digest = "cda9f4b1c18eecc5cb99808db05083c69bde71e37cee5a4ebbe886485b60beda"
   solver-name = "gps-cdcl"
   solver-version = 1

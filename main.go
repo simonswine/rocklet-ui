@@ -281,7 +281,10 @@ func handleList(w http.ResponseWriter, r *http.Request) {
 		for _, elem := range c.indexer.List() {
 			switch v := elem.(type) {
 			case *vacuumv1alpha1.Vacuum:
-				list.Items = append(list.Items, *v)
+				smaller := v.DeepCopy()
+				smaller.Status.Path = []vacuumv1alpha1.Position(nil)
+				smaller.Status.Map = nil
+				list.Items = append(list.Items, *smaller)
 			default:
 				continue
 			}
@@ -304,6 +307,7 @@ func handleList(w http.ResponseWriter, r *http.Request) {
 		obj = &list
 	default:
 		httpError(w, fmt.Sprintf("type %s not found", vars["type"]), 500)
+		return
 	}
 	b, err := json.Marshal(obj)
 	if err != nil {
@@ -332,7 +336,7 @@ func handleMap(w http.ResponseWriter, r *http.Request) {
 	switch v := item.(type) {
 	case *vacuumv1alpha1.Vacuum:
 		w.Header().Set("Content-Type", "image/png")
-		w.Write(v.Status.Map)
+		w.Write(v.Status.Map.Data)
 	case *vacuumv1alpha1.Cleaning:
 		w.Header().Set("Content-Type", "image/png")
 		w.Write(v.Status.Map.Data)
@@ -344,7 +348,11 @@ func handleMap(w http.ResponseWriter, r *http.Request) {
 
 func handleSingle(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	c := controllerIndex[vars["type"]]
+	c, ok := controllerIndex[vars["type"]]
+	if !ok {
+		httpError(w, fmt.Sprintf("type %s does not exist", vars["type"]), 404)
+		return
+	}
 
 	item, exists, err := c.indexer.GetByKey(fmt.Sprintf("%s/%s", vars["namespace"], vars["name"]))
 	if err != nil {

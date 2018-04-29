@@ -1,8 +1,8 @@
-module Vacuum.Cleanings.Single exposing (..)
+module Vacuum.Vacuums.Single exposing (..)
 
 import Html exposing (Html, text)
 import Vacuum.Msgs exposing (Msg)
-import Vacuum.Models exposing (Cleaning, Path)
+import Vacuum.Models exposing (Vacuum, Path)
 import Vacuum.Page
 import Vacuum.Map
 import RemoteData exposing (WebData)
@@ -10,15 +10,15 @@ import Material.Options exposing (css)
 import Material.Grid exposing (grid, cell, noSpacing)
 
 
-view : WebData Cleaning -> Float -> Html Msg
+view : WebData Vacuum -> Float -> Html Msg
 view response zoom =
     Vacuum.Page.body
-        "Cleaning"
-        (maybeCleaning response zoom)
+        "Vacuum"
+        (maybeVacuum response zoom)
 
 
-maybeCleaning : WebData Cleaning -> Float -> Html Msg
-maybeCleaning response zoom =
+maybeVacuum : WebData Vacuum -> Float -> Html Msg
+maybeVacuum response zoom =
     case response of
         RemoteData.NotAsked ->
             text ""
@@ -26,30 +26,30 @@ maybeCleaning response zoom =
         RemoteData.Loading ->
             text "Loading..."
 
-        RemoteData.Success cleaning ->
-            case cleaning.status.map of
+        RemoteData.Success vacuum ->
+            case vacuum.status.map of
                 Just map ->
-                    single cleaning map zoom
+                    single vacuum map zoom
 
                 Nothing ->
-                    text "Cleaning does not contain map"
+                    text "Vacuum does not contain map"
 
         RemoteData.Failure error ->
             text (toString error)
 
 
-single : Cleaning -> Vacuum.Models.Map -> Float -> Html Msg
-single cleaning map scale =
+single : Vacuum -> Vacuum.Models.Map -> Float -> Html Msg
+single vacuum map scale =
     Material.Options.div
         []
         [ Material.Options.div
             []
             [ Html.h4
                 []
-                [ text (cleaning.metadata.namespace ++ "/" ++ cleaning.metadata.name) ]
+                [ text (vacuum.metadata.namespace ++ "/" ++ vacuum.metadata.name) ]
             , grid [ noSpacing ]
                 [ cell []
-                    (Vacuum.Map.view map scale cleaning.status.path cleaning.status.charger)
+                    (Vacuum.Map.view map scale vacuum.status.path vacuum.status.charger)
                 ]
             ]
         ]

@@ -77,6 +77,9 @@ handleLocationChange location ( model, cmd ) =
             Vacuum.Models.VacuumsRoute ->
                 ( { model | route = newRoute, location = location }, Cmd.batch ([ fetchVacuums, cmd ]) )
 
+            Vacuum.Models.VacuumRoute namespace name ->
+                ( { model | route = newRoute, location = location }, Cmd.batch ([ (fetchVacuum namespace name), cmd ]) )
+
             Vacuum.Models.CleaningsRoute ->
                 ( { model | route = newRoute, location = location }, Cmd.batch ([ fetchCleanings, cmd ]) )
 

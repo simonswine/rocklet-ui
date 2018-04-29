@@ -18,12 +18,20 @@ metadataDecoder =
 
 mapDecoder : Decode.Decoder Map
 mapDecoder =
-    decode Map
-        |> required "left" Decode.int
-        |> required "top" Decode.int
-        |> required "width" Decode.int
-        |> required "height" Decode.int
-        |> required "data" Decode.string
+    Decode.map5 Map
+        (Decode.field "left" Decode.int |> defaultDecoder 0)
+        (Decode.field "top" Decode.int |> defaultDecoder 0)
+        (Decode.field "width" Decode.int |> defaultDecoder 0)
+        (Decode.field "height" Decode.int |> defaultDecoder 0)
+        (Decode.field "data" Decode.string |> defaultDecoder "")
+
+
+defaultDecoder : a -> Decode.Decoder a -> Decode.Decoder a
+defaultDecoder default decoder =
+    Decode.oneOf
+        [ decoder
+        , Decode.succeed default
+        ]
 
 
 positionDecoder : Decode.Decoder Position
@@ -60,7 +68,7 @@ fetchVacuum namespace name =
 
 fetchVacuumUrl : String -> String -> String
 fetchVacuumUrl namespace name =
-    "/apis/vacuum.swine.de/v1alpha1/namespaces/" ++ namespace ++ "/vacuum/" ++ name
+    "/apis/vacuum.swine.de/v1alpha1/namespaces/" ++ namespace ++ "/vacuums/" ++ name
 
 
 vacuumsDecoder : Decode.Decoder (List Vacuum)
@@ -73,6 +81,16 @@ vacuumStatusDecoder : Decode.Decoder VacuumStatus
 vacuumStatusDecoder =
     decode VacuumStatus
         |> required "state" Decode.string
+        |> required "mac" Decode.string
+        |> required "duration" Decode.string
+        |> required "area" Decode.int
+        |> required "batteryLevel" Decode.int
+        |> required "fanPower" Decode.int
+        |> required "errorCode" Decode.int
+        |> required "doNotDisturb" Decode.bool
+        |> optional "map" (Decode.nullable mapDecoder) Nothing
+        |> optional "path" pathDecoder []
+        |> optional "charger" (Decode.maybe positionDecoder) Nothing
 
 
 vacuumDecoder : Decode.Decoder Vacuum

@@ -5,7 +5,9 @@ import Vacuum.Msgs exposing (Msg)
 import Vacuum.Models exposing (Vacuum)
 import Vacuum.Page
 import RemoteData exposing (WebData)
+import Material.Layout exposing (link, href)
 import Material.Table as Table
+import Material.Icon as Icon
 
 
 view : WebData (List Vacuum) -> Html Msg
@@ -36,9 +38,12 @@ list vacuums =
     Table.table []
         [ Table.thead []
             [ Table.tr []
-                [ Table.th [ Table.numeric ] [ text "Namespace" ]
-                , Table.th [ Table.numeric ] [ text "Name" ]
-                , Table.th [ Table.numeric ] [ text "State" ]
+                [ Table.th [] [ text "Namespace" ]
+                , Table.th [] [ text "Name" ]
+                , Table.th [] [ text "State" ]
+                , Table.th [ Table.numeric ] [ text "Battery Level" ]
+                , Table.th [ Table.numeric ] [ text "Fan Speed" ]
+                , Table.th [] []
                 ]
             ]
         , Table.tbody []
@@ -52,6 +57,9 @@ vacuumRow vacuum =
         [ Table.td [] [ text vacuum.metadata.namespace ]
         , Table.td [] [ text vacuum.metadata.name ]
         , Table.td [] [ text vacuum.status.state ]
+        , Table.td [ Table.numeric ] [ vacuum.status.batteryLevel |> toString |> text ]
+        , Table.td [ Table.numeric ] [ vacuum.status.fanPower |> toString |> text ]
+        , Table.td [] [ link [ href ("#vacuum/" ++ vacuum.metadata.namespace ++ "/" ++ vacuum.metadata.name) ] [ Icon.i "map" ] ]
         , Table.td []
             []
         ]
