@@ -72,7 +72,7 @@ page model =
             Vacuum.Vacuums.List.view model.vacuums
 
         Vacuum.Models.VacuumRoute _ _ ->
-            Vacuum.Vacuums.Single.view model.vacuum model.mapZoom
+            Vacuum.Vacuums.Single.view model
 
         Vacuum.Models.CleaningsRoute ->
             Vacuum.Cleanings.List.view model.cleanings

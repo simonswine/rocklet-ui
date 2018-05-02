@@ -5,6 +5,7 @@ import Vacuum.Msgs exposing (Msg)
 import Vacuum.Models exposing (Model)
 import Vacuum.Routing exposing (parseLocation)
 import Navigation exposing (Location)
+import RemoteData
 import Material
 import Array
 import Maybe
@@ -20,13 +21,13 @@ update msg model =
             ( { model | vacuums = response }, Cmd.none )
 
         Vacuum.Msgs.OnFetchVacuum response ->
-            ( { model | vacuum = response }, Cmd.none )
+            ( { model | vacuum = response, goto = Nothing }, Cmd.none )
 
         Vacuum.Msgs.OnFetchCleanings response ->
             ( { model | cleanings = response }, Cmd.none )
 
         Vacuum.Msgs.OnFetchCleaning response ->
-            ( { model | cleaning = response }, Cmd.none )
+            ( { model | cleaning = response, goto = Nothing }, Cmd.none )
 
         Vacuum.Msgs.OnLocationChange location ->
             handleLocationChange location ( model, Cmd.none )
@@ -36,6 +37,17 @@ update msg model =
 
         Vacuum.Msgs.MapZoomSliderMsg factor ->
             ( { model | mapZoom = factor }, Cmd.none )
+
+        Vacuum.Msgs.SendCommand _ ->
+            ( model, Cmd.none )
+
+        Vacuum.Msgs.GoToPosition pos ->
+            case model.route of
+                Vacuum.Models.VacuumRoute namespace name ->
+                    ( { model | goto = Just pos }, Cmd.none )
+
+                _ ->
+                    ( model, Cmd.none )
 
 
 handleNotify : String -> ( Model, Cmd Msg ) -> ( Model, Cmd Msg )

@@ -79,6 +79,7 @@ type alias Model =
     , location : Location
     , mdl : Material.Model
     , mapZoom : Float
+    , goto : Maybe Position
     }
 
 
@@ -92,6 +93,7 @@ initialModel location route =
     , location = location
     , mdl = Material.model
     , mapZoom = 2.0
+    , goto = Nothing
     }
 
 

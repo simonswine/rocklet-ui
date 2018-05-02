@@ -1,6 +1,6 @@
 module Vacuum.Msgs exposing (..)
 
-import Vacuum.Models exposing (Vacuum, Cleaning)
+import Vacuum.Models exposing (Vacuum, Cleaning, Position)
 import Navigation exposing (Location)
 import RemoteData exposing (WebData)
 import Material
@@ -15,3 +15,5 @@ type Msg
     | OnLocationChange Location
     | NewNotify String
     | MapZoomSliderMsg Float
+    | GoToPosition Position
+    | SendCommand String

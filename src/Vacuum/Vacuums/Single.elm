@@ -2,24 +2,26 @@ module Vacuum.Vacuums.Single exposing (..)
 
 import Html exposing (Html, text)
 import Vacuum.Msgs exposing (Msg)
-import Vacuum.Models exposing (Vacuum, Path)
+import Vacuum.Models exposing (Vacuum, Path, Map, Position, Model)
 import Vacuum.Page
 import Vacuum.Map
 import RemoteData exposing (WebData)
 import Material.Options exposing (css)
-import Material.Grid exposing (grid, cell, noSpacing)
+import Material.Grid exposing (grid, cell, noSpacing, offset, size, Device(..))
+import Material.Button as Button
+import Material.Options as Options
 
 
-view : WebData Vacuum -> Float -> Html Msg
-view response zoom =
+view : Model -> Html Msg
+view model =
     Vacuum.Page.body
         "Vacuum"
-        (maybeVacuum response zoom)
+        (maybeVacuum model)
 
 
-maybeVacuum : WebData Vacuum -> Float -> Html Msg
-maybeVacuum response zoom =
-    case response of
+maybeVacuum : Model -> Html Msg
+maybeVacuum model =
+    case model.vacuum of
         RemoteData.NotAsked ->
             text ""
 
@@ -29,7 +31,7 @@ maybeVacuum response zoom =
         RemoteData.Success vacuum ->
             case vacuum.status.map of
                 Just map ->
-                    single vacuum map zoom
+                    single model vacuum map
 
                 Nothing ->
                     text "Vacuum does not contain map"
@@ -38,8 +40,8 @@ maybeVacuum response zoom =
             text (toString error)
 
 
-single : Vacuum -> Vacuum.Models.Map -> Float -> Html Msg
-single vacuum map scale =
+single : Model -> Vacuum -> Map -> Html Msg
+single model vacuum map =
     Material.Options.div
         []
         [ Material.Options.div
@@ -48,8 +50,59 @@ single vacuum map scale =
                 []
                 [ text (vacuum.metadata.namespace ++ "/" ++ vacuum.metadata.name) ]
             , grid [ noSpacing ]
-                [ cell []
-                    (Vacuum.Map.view map scale vacuum.status.path vacuum.status.charger)
+                [ cell [ size All 3 ]
+                    [ Button.render Vacuum.Msgs.Mdl
+                        [ 0 ]
+                        model.mdl
+                        [ Button.raised
+                        , Button.ripple
+                        , Options.css "margin" "5px"
+                        , Options.css "height" "40px"
+                        , Options.onClick (Vacuum.Msgs.SendCommand "app_start")
+                        ]
+                        [ text "Start" ]
+                    ]
+                , cell [ size All 3 ]
+                    [ Button.render Vacuum.Msgs.Mdl
+                        [ 1 ]
+                        model.mdl
+                        [ Button.raised
+                        , Button.ripple
+                        , Options.css "margin" "5px"
+                        , Options.css "height" "40px"
+                        , Options.onClick (Vacuum.Msgs.SendCommand "app_stop")
+                        ]
+                        [ text "Stop" ]
+                    ]
+                , cell [ size All 3 ]
+                    [ Button.render Vacuum.Msgs.Mdl
+                        [ 2 ]
+                        model.mdl
+                        [ Button.raised
+                        , Button.ripple
+                        , Options.css "margin" "5px"
+                        , Options.css "height" "40px"
+                        , Options.onClick (Vacuum.Msgs.SendCommand "app_pause")
+                        ]
+                        [ text "Pause" ]
+                    ]
+                , cell [ size All 3 ]
+                    [ Button.render Vacuum.Msgs.Mdl
+                        [ 3 ]
+                        model.mdl
+                        [ Button.raised
+                        , Button.ripple
+                        , Options.css "margin" "5px"
+                        , Options.css "height" "40px"
+                        , Options.onClick (Vacuum.Msgs.SendCommand "app_charge")
+                        ]
+                        [ text "Dock" ]
+                    ]
+                , cell
+                    [ size All 12
+                    , Options.css "margin-top" "20px"
+                    ]
+                    (Vacuum.Map.view map model.mapZoom vacuum.status.path vacuum.status.charger model.goto)
                 ]
             ]
         ]

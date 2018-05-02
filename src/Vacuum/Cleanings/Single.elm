@@ -49,7 +49,7 @@ single cleaning map scale =
                 [ text (cleaning.metadata.namespace ++ "/" ++ cleaning.metadata.name) ]
             , grid [ noSpacing ]
                 [ cell []
-                    (Vacuum.Map.view map scale cleaning.status.path cleaning.status.charger)
+                    (Vacuum.Map.view map scale cleaning.status.path cleaning.status.charger Nothing)
                 ]
             ]
         ]

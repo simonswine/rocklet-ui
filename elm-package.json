@@ -9,6 +9,7 @@
     "proxy": "http://localhost:8812",
     "exposed-modules": [],
     "dependencies": {
+        "Elm-Canvas/element-relative-mouse-events": "1.0.0 <= v < 2.0.0",
         "NoRedInk/elm-decode-pipeline": "3.0.0 <= v < 4.0.0",
         "debois/elm-mdl": "8.0.0 <= v < 9.0.0",
         "elm-community/random-extra": "2.0.0 <= v < 3.0.0",
@@ -22,6 +23,7 @@
         "eskimoblood/elm-color-extra": "5.0.0 <= v < 6.0.0",
         "evancz/url-parser": "2.0.1 <= v < 3.0.0",
         "krisajenkins/remotedata": "4.4.0 <= v < 5.0.0",
+        "mbr/elm-mouse-events": "1.0.4 <= v < 2.0.0",
         "mdgriffith/elm-style-animation": "3.5.5 <= v < 4.0.0"
     },
     "elm-version": "0.18.0 <= v < 0.19.0"
