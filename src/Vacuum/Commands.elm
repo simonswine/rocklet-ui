@@ -74,7 +74,10 @@ fetchVacuumUrl namespace name =
 
 vacuumsDecoder : Decode.Decoder (List Vacuum)
 vacuumsDecoder =
-    Decode.list vacuumDecoder
+    Decode.oneOf
+        [ Decode.list vacuumDecoder
+        , Decode.null []
+        ]
         |> Decode.at [ "items" ]
 
 
@@ -173,7 +176,10 @@ fetchCleaningUrl namespace name =
 
 cleaningsDecoder : Decode.Decoder (List Cleaning)
 cleaningsDecoder =
-    Decode.list cleaningDecoder
+    Decode.oneOf
+        [ Decode.list cleaningDecoder
+        , Decode.null []
+        ]
         |> Decode.at [ "items" ]
 
 
