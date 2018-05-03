@@ -390,12 +390,14 @@ func handleSingle(w http.ResponseWriter, r *http.Request) {
 }
 
 func createJob(k *kubernetes.Clientset, nodeName string, namespace string, command string, args json.RawMessage) error {
+	backoffLimit := int32(1)
 	j := &batchv1.Job{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      fmt.Sprintf("rocklet-ui-cmd-%s", RandStringRunes(8)),
 			Namespace: namespace,
 		},
 		Spec: batchv1.JobSpec{
+			BackoffLimit: &backoffLimit,
 			Template: v1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: map[string]string{
