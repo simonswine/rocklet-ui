@@ -36,7 +36,7 @@ view map scale path charger goto =
                 , ( "height", (scale * toFloat (map.height) |> round |> toString) ++ "px" )
                 , ( "z-index", "100" )
                 ]
-            , onClick (\x -> Vacuum.Msgs.GoToPosition (mouseEventToPosition x scale))
+            , onClick (\x -> Vacuum.Msgs.GoToPosition (mouseEventToPosition x scale map))
             ]
             []
         , Svg.svg
@@ -53,10 +53,6 @@ view map scale path charger goto =
                 --, ( "top", (scale * toFloat (map.height) * -1 |> round |> toString) ++ "px" )
                 , ( "z-index", "-1" )
                 ]
-
-            ---    , Events.onClick Vacuum.Msgs.GoToPosition
-            ---, Events.onClick Vacuum.Msgs.GoToPosition
-            ---, onClick (Vacuum.Msgs.GoToPosition { x = 10.0, y = 10.0 })
             ]
             (svgContent
                 map
@@ -69,14 +65,16 @@ view map scale path charger goto =
     ]
 
 
-mouseEventToPosition : MouseEvent -> Float -> Position
-mouseEventToPosition x scale =
+mouseEventToPosition : MouseEvent -> Float -> Map -> Position
+mouseEventToPosition x scale map =
     let
         pos =
             relPos x
     in
-        { x = toFloat pos.x / scale
-        , y = toFloat pos.y / scale
+        { x =
+            toFloat pos.x / scale
+        , y =
+            toFloat pos.y / scale
         }
 
 

@@ -29,19 +29,14 @@ maybeVacuum model =
             text "Loading..."
 
         RemoteData.Success vacuum ->
-            case vacuum.status.map of
-                Just map ->
-                    single model vacuum map
-
-                Nothing ->
-                    text "Vacuum does not contain map"
+            single model vacuum
 
         RemoteData.Failure error ->
             text (toString error)
 
 
-single : Model -> Vacuum -> Map -> Html Msg
-single model vacuum map =
+single : Model -> Vacuum -> Html Msg
+single model vacuum =
     Material.Options.div
         []
         [ Material.Options.div
@@ -50,59 +45,81 @@ single model vacuum map =
                 []
                 [ text (vacuum.metadata.namespace ++ "/" ++ vacuum.metadata.name) ]
             , grid [ noSpacing ]
-                [ cell [ size All 3 ]
-                    [ Button.render Vacuum.Msgs.Mdl
-                        [ 0 ]
-                        model.mdl
-                        [ Button.raised
-                        , Button.ripple
-                        , Options.css "margin" "5px"
-                        , Options.css "height" "40px"
-                        , Options.onClick (Vacuum.Msgs.SendCommand "app_start")
+                ([ Just
+                    (cell
+                        [ size All 3 ]
+                        [ Button.render Vacuum.Msgs.Mdl
+                            [ 0 ]
+                            model.mdl
+                            [ Button.raised
+                            , Button.ripple
+                            , Options.css "margin" "5px"
+                            , Options.css "height" "40px"
+                            , Options.onClick (Vacuum.Msgs.SendCommand "app_start")
+                            ]
+                            [ text "Start" ]
                         ]
-                        [ text "Start" ]
-                    ]
-                , cell [ size All 3 ]
-                    [ Button.render Vacuum.Msgs.Mdl
-                        [ 1 ]
-                        model.mdl
-                        [ Button.raised
-                        , Button.ripple
-                        , Options.css "margin" "5px"
-                        , Options.css "height" "40px"
-                        , Options.onClick (Vacuum.Msgs.SendCommand "app_stop")
+                    )
+                 , Just
+                    (cell
+                        [ size All 3 ]
+                        [ Button.render Vacuum.Msgs.Mdl
+                            [ 1 ]
+                            model.mdl
+                            [ Button.raised
+                            , Button.ripple
+                            , Options.css "margin" "5px"
+                            , Options.css "height" "40px"
+                            , Options.onClick (Vacuum.Msgs.SendCommand "app_stop")
+                            ]
+                            [ text "Stop" ]
                         ]
-                        [ text "Stop" ]
-                    ]
-                , cell [ size All 3 ]
-                    [ Button.render Vacuum.Msgs.Mdl
-                        [ 2 ]
-                        model.mdl
-                        [ Button.raised
-                        , Button.ripple
-                        , Options.css "margin" "5px"
-                        , Options.css "height" "40px"
-                        , Options.onClick (Vacuum.Msgs.SendCommand "app_pause")
+                    )
+                 , Just
+                    (cell
+                        [ size All 3 ]
+                        [ Button.render Vacuum.Msgs.Mdl
+                            [ 2 ]
+                            model.mdl
+                            [ Button.raised
+                            , Button.ripple
+                            , Options.css "margin" "5px"
+                            , Options.css "height" "40px"
+                            , Options.onClick (Vacuum.Msgs.SendCommand "app_pause")
+                            ]
+                            [ text "Pause" ]
                         ]
-                        [ text "Pause" ]
-                    ]
-                , cell [ size All 3 ]
-                    [ Button.render Vacuum.Msgs.Mdl
-                        [ 3 ]
-                        model.mdl
-                        [ Button.raised
-                        , Button.ripple
-                        , Options.css "margin" "5px"
-                        , Options.css "height" "40px"
-                        , Options.onClick (Vacuum.Msgs.SendCommand "app_charge")
+                    )
+                 , Just
+                    (cell
+                        [ size All 3 ]
+                        [ Button.render Vacuum.Msgs.Mdl
+                            [ 3 ]
+                            model.mdl
+                            [ Button.raised
+                            , Button.ripple
+                            , Options.css "margin" "5px"
+                            , Options.css "height" "40px"
+                            , Options.onClick (Vacuum.Msgs.SendCommand "app_charge")
+                            ]
+                            [ text "Dock" ]
                         ]
-                        [ text "Dock" ]
-                    ]
-                , cell
-                    [ size All 12
-                    , Options.css "margin-top" "20px"
-                    ]
-                    (Vacuum.Map.view map model.mapZoom vacuum.status.path vacuum.status.charger model.goto)
-                ]
+                    )
+                 , (case vacuum.status.map of
+                        Just map ->
+                            Just
+                                (cell
+                                    [ size All 12
+                                    , Options.css "margin-top" "20px"
+                                    ]
+                                    (Vacuum.Map.view map model.mapZoom vacuum.status.path vacuum.status.charger model.goto)
+                                )
+
+                        _ ->
+                            Nothing
+                   )
+                 ]
+                    |> List.filterMap identity
+                )
             ]
         ]

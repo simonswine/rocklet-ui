@@ -110,17 +110,23 @@ defaultRequestHeaders =
     ]
 
 
-sendVacuumCommandPosition : String -> String -> String -> Position -> Cmd Msg
-sendVacuumCommandPosition namespace name command position =
-    sendVacuumCommandBody namespace name command (encodePosition position)
+sendVacuumCommandPosition : Vacuum -> String -> Position -> Cmd Msg
+sendVacuumCommandPosition vacuum command position =
+    sendVacuumCommandBody vacuum.metadata.namespace vacuum.metadata.name command (encodePosition vacuum position)
 
 
-encodePosition : Position -> Encode.Value
-encodePosition pos =
-    Encode.object
-        [ ( "x", Encode.int <| round <| pos.x )
-        , ( "y", Encode.int <| round <| pos.y )
-        ]
+encodePosition : Vacuum -> Position -> Encode.Value
+encodePosition vacuum pos =
+    Encode.list
+        (case vacuum.status.map of
+            Just map ->
+                [ ((toFloat map.left) + pos.x) * 50.0 |> round |> Encode.int
+                , (1024.0 - ((toFloat map.top) + pos.y)) * 50.0 |> round |> Encode.int
+                ]
+
+            Nothing ->
+                []
+        )
 
 
 sendVacuumCommand : String -> String -> String -> Cmd Msg

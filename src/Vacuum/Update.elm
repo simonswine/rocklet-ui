@@ -50,9 +50,9 @@ update msg model =
             ( model, Cmd.none )
 
         Vacuum.Msgs.GoToPosition pos ->
-            case model.route of
-                Vacuum.Models.VacuumRoute namespace name ->
-                    ( { model | goto = Just pos }, (sendVacuumCommandPosition namespace name "app_goto_target" pos) )
+            case ( model.route, model.vacuum ) of
+                ( Vacuum.Models.VacuumRoute _ _, RemoteData.Success vacuum ) ->
+                    ( { model | goto = Just pos }, (sendVacuumCommandPosition vacuum "app_goto_target" pos) )
 
                 _ ->
                     ( model, Cmd.none )
