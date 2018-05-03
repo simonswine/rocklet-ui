@@ -1,6 +1,7 @@
 module Vacuum.Commands exposing (..)
 
-import Http
+import Http exposing (Header)
+import Json.Encode as Encode
 import Json.Decode as Decode
 import Json.Decode.Pipeline exposing (decode, required, optional)
 import Vacuum.Msgs exposing (Msg)
@@ -98,6 +99,52 @@ vacuumDecoder =
     decode Vacuum
         |> required "metadata" metadataDecoder
         |> required "status" vacuumStatusDecoder
+
+
+defaultRequestHeaders : List Header
+defaultRequestHeaders =
+    [ Http.header "Content-Type" "application/json"
+    ]
+
+
+sendVacuumCommandPosition : String -> String -> String -> Position -> Cmd Msg
+sendVacuumCommandPosition namespace name command position =
+    sendVacuumCommandBody namespace name command (encodePosition position)
+
+
+encodePosition : Position -> Encode.Value
+encodePosition pos =
+    Encode.object
+        [ ( "x", Encode.int <| round <| pos.x )
+        , ( "y", Encode.int <| round <| pos.y )
+        ]
+
+
+sendVacuumCommand : String -> String -> String -> Cmd Msg
+sendVacuumCommand namespace name command =
+    sendVacuumCommandBody namespace name command (Encode.object [])
+
+
+sendVacuumCommandBody : String -> String -> String -> Encode.Value -> Cmd Msg
+sendVacuumCommandBody namespace name command bodyJson =
+    let
+        url =
+            (fetchVacuumUrl namespace name) ++ "/command/" ++ command
+
+        body =
+            Http.jsonBody <| bodyJson
+    in
+        Http.post
+            url
+            body
+            statusDecoder
+            |> RemoteData.sendRequest
+            |> Cmd.map Vacuum.Msgs.SendCommandStatus
+
+
+statusDecoder : Decode.Decoder String
+statusDecoder =
+    Decode.field "status" Decode.string
 
 
 fetchCleanings : Cmd Msg

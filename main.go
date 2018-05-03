@@ -20,6 +20,8 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"io/ioutil"
+	"math/rand"
 	"net"
 	"net/http"
 	"os"
@@ -27,10 +29,13 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/rs/zerolog"
+	batchv1 "k8s.io/api/batch/v1"
 	"k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/apimachinery/pkg/util/wait"
+	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/clientcmd"
@@ -85,6 +90,10 @@ func (c *Controller) sendNotify(key string) error {
 	log.Info().Str("notify_key", notifyKey).Msg("received update")
 	hub.broadcast <- []byte(notifyKey)
 	return nil
+}
+
+func init() {
+	rand.Seed(time.Now().UnixNano())
 }
 
 // handleErr checks if an error happened and makes sure we will retry later.
@@ -176,6 +185,11 @@ func main() {
 		log.Fatal().Err(err).Msg("error creating client set")
 	}
 
+	kubeclient, err := kubernetes.NewForConfig(config)
+	if err != nil {
+		log.Fatal().Err(err).Msg("error creating client set")
+	}
+
 	// create the pod watcher
 	vacuumListWatcher := cache.NewListWatchFromClient(clientset.VacuumV1alpha1().RESTClient(), "vacuums", v1.NamespaceAll, fields.Everything())
 	cleaningListWatcher := cache.NewListWatchFromClient(clientset.VacuumV1alpha1().RESTClient(), "cleanings", v1.NamespaceAll, fields.Everything())
@@ -242,6 +256,7 @@ func main() {
 	m.HandleFunc("/apis/vacuum.swine.de/v1alpha1/{type}", handleList)
 	m.HandleFunc("/apis/vacuum.swine.de/v1alpha1/namespaces/{namespace}/{type}/{name}", handleSingle)
 	m.HandleFunc("/apis/vacuum.swine.de/v1alpha1/namespaces/{namespace}/{type}/{name}/map", handleMap)
+	m.HandleFunc("/apis/vacuum.swine.de/v1alpha1/namespaces/{namespace}/vacuums/{name}/command/{command}", handleCommand(kubeclient))
 
 	// websocket notifications
 	m.HandleFunc("/ws/notify", handleNotify)
@@ -372,6 +387,98 @@ func handleSingle(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(b)
+}
+
+func createJob(k *kubernetes.Clientset, nodeName string, namespace string, command string, args json.RawMessage) error {
+	j := &batchv1.Job{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      fmt.Sprintf("rocklet-ui-cmd-%s", RandStringRunes(8)),
+			Namespace: namespace,
+		},
+		Spec: batchv1.JobSpec{
+			Template: v1.PodTemplateSpec{
+				ObjectMeta: metav1.ObjectMeta{
+					Labels: map[string]string{
+						"app": "spot-clean",
+					},
+				},
+				Spec: v1.PodSpec{
+					Tolerations: []v1.Toleration{
+						v1.Toleration{
+							Key:      "mi.com/vacuum",
+							Effect:   "NoExecute",
+							Operator: v1.TolerationOpExists,
+						},
+					},
+					RestartPolicy: v1.RestartPolicyNever,
+					NodeName:      nodeName,
+					Containers: []v1.Container{
+						v1.Container{
+							Name:  "rocklet",
+							Image: command,
+							Args: []string{
+								string(args),
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	_, err := k.BatchV1().Jobs(namespace).Create(j)
+	return err
+
+}
+
+func handleCommand(k *kubernetes.Clientset) http.HandlerFunc {
+	allowedCommands := map[string]bool{
+		"app_start":       true,
+		"app_stop":        true,
+		"app_spot":        true,
+		"app_goto_target": true,
+		"app_pause":       true,
+		"app_charge":      true,
+	}
+
+	return func(w http.ResponseWriter, r *http.Request) {
+		vars := mux.Vars(r)
+		if r.Method == "POST" {
+			command := vars["command"]
+
+			if _, ok := allowedCommands[command]; !ok {
+				httpError(w, "Error invalid command", http.StatusNotFound)
+				return
+			}
+
+			body, err := ioutil.ReadAll(r.Body)
+			if err != nil {
+				httpError(w, fmt.Sprintf("Error reading body: %s", err), http.StatusNotFound)
+				return
+			}
+
+			err = createJob(k, vars["name"], vars["namespace"], command, json.RawMessage(body))
+			if err != nil {
+				httpError(w, fmt.Sprintf("Error creating job: %s", err), http.StatusNotFound)
+				return
+			}
+
+			fmt.Fprint(w, "done")
+			log.Info().Str("command", command).Str("vacuum", vars["name"]).Str("params", string(body)).Msgf("")
+		} else {
+			http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
+		}
+	}
+}
+
+var letterRunes = []rune("abcdefghijklmnopqrstuvwxyz0123456789")
+
+func RandStringRunes(n int) string {
+	b := make([]rune, n)
+	for i := range b {
+		b[i] = letterRunes[rand.Intn(len(letterRunes))]
+	}
+	return string(b)
 }
 
 func httpError(w http.ResponseWriter, err string, status int) {

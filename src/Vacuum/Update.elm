@@ -1,6 +1,6 @@
 module Vacuum.Update exposing (..)
 
-import Vacuum.Commands exposing (fetchVacuums, fetchVacuum, fetchCleanings, fetchCleaning)
+import Vacuum.Commands exposing (fetchVacuums, sendVacuumCommand, fetchVacuum, fetchCleanings, fetchCleaning, sendVacuumCommandPosition)
 import Vacuum.Msgs exposing (Msg)
 import Vacuum.Models exposing (Model)
 import Vacuum.Routing exposing (parseLocation)
@@ -38,13 +38,21 @@ update msg model =
         Vacuum.Msgs.MapZoomSliderMsg factor ->
             ( { model | mapZoom = factor }, Cmd.none )
 
-        Vacuum.Msgs.SendCommand _ ->
+        Vacuum.Msgs.SendCommand cmd ->
+            case model.route of
+                Vacuum.Models.VacuumRoute namespace name ->
+                    ( model, (sendVacuumCommand namespace name cmd) )
+
+                _ ->
+                    ( model, Cmd.none )
+
+        Vacuum.Msgs.SendCommandStatus _ ->
             ( model, Cmd.none )
 
         Vacuum.Msgs.GoToPosition pos ->
             case model.route of
                 Vacuum.Models.VacuumRoute namespace name ->
-                    ( { model | goto = Just pos }, Cmd.none )
+                    ( { model | goto = Just pos }, (sendVacuumCommandPosition namespace name "app_goto_target" pos) )
 
                 _ ->
                     ( model, Cmd.none )

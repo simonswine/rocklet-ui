@@ -17,3 +17,4 @@ type Msg
     | MapZoomSliderMsg Float
     | GoToPosition Position
     | SendCommand String
+    | SendCommandStatus (WebData String)
